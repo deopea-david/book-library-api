@@ -1,8 +1,8 @@
-using BookLibraryAPI.Models;
+using BookLibraryAPI.Domain.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookLibraryAPI.Data;
+namespace BookLibraryAPI.Infra.Data;
 
 public class SQLiteContext(DbContextOptions<SQLiteContext> options) : DbContext(options)
 {
@@ -11,7 +11,7 @@ public class SQLiteContext(DbContextOptions<SQLiteContext> options) : DbContext(
     optionsBuilder.UseSqlite(new SqliteConnectionStringBuilder() { DataSource = "book-library.db" }.ToString());
   }
 
-  public DbSet<Author> Authors { get; set; }
-  public DbSet<Book> Books { get; set; }
-  public DbSet<Category> Categories { get; set; }
+  public DbSet<AuthorItem> Authors { get; set; }
+  public DbSet<BookItem> Books { get; set; }
+  public DbSet<CategoryItem> Categories { get; set; }
 }

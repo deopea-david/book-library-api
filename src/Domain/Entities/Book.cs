@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using BookLibraryAPI.Domain.Common;
 
-namespace BookLibraryAPI.Models;
+namespace BookLibraryAPI.Domain.Entities;
 
 public class BookBaseDTO
 {
@@ -27,7 +28,7 @@ public class BookSetDTO : BookBaseDTO
   public new bool IsRead { get; set; } = false;
 }
 
-public class Book : BookSetDTO, IEntity
+public class BookItem : BookSetDTO, IEntity
 {
   [Required(ErrorMessage = "Id is required")]
   public int Id { get; set; }

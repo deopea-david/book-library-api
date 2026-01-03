@@ -1,4 +1,4 @@
-namespace BookLibraryAPI.Models;
+namespace BookLibraryAPI.Domain.Common;
 
 public interface IEntity
 {

@@ -1,5 +1,5 @@
-using BookLibraryAPI.Models;
-using BookLibraryAPI.Services;
+using BookLibraryAPI.Application.Common.Interfaces;
+using BookLibraryAPI.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookLibraryAPI.Controllers;
@@ -17,7 +17,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
   }
 
   [HttpGet]
-  public async Task<ActionResult<Category>> GetCategories([FromQuery] int? id, [FromQuery] string? name)
+  public async Task<ActionResult<CategoryItem>> GetCategories([FromQuery] int? id, [FromQuery] string? name)
   {
     var categories = await categoryService.GetMany(id, name);
     if (!categories.Any())
@@ -28,7 +28,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
   [HttpGet]
   [Route("{id}")]
-  public async Task<ActionResult<Category>> GetCategory(int id)
+  public async Task<ActionResult<CategoryItem>> GetCategory(int id)
   {
     var category = await categoryService.GetById(id);
     if (category == null)
@@ -38,7 +38,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
   }
 
   [HttpPost]
-  public async Task<ActionResult<Category>> CreateCategory([FromBody] CategorySetDTO category)
+  public async Task<ActionResult<CategoryItem>> CreateCategory([FromBody] CategorySetDTO category)
   {
     var validationRes = ValidateCategory(category);
     if (validationRes != null)
@@ -50,7 +50,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
   [HttpPut]
   [Route("{id}")]
-  public async Task<ActionResult<Category>> UpdateCategory(int id, [FromBody] CategorySetDTO category)
+  public async Task<ActionResult<CategoryItem>> UpdateCategory(int id, [FromBody] CategorySetDTO category)
   {
     var validationRes = ValidateCategory(category);
     if (validationRes != null)
@@ -66,7 +66,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
   [HttpPatch]
   [Route("{id}")]
-  public async Task<ActionResult<Category>> PatchCategory(int id, [FromBody] CategoryBaseDTO category)
+  public async Task<ActionResult<CategoryItem>> PatchCategory(int id, [FromBody] CategoryBaseDTO category)
   {
     var orig = await categoryService.GetById(id);
     if (orig == null)
@@ -78,7 +78,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
   [HttpDelete]
   [Route("{id}")]
-  public async Task<ActionResult<Category>> DeleteCategory(int id)
+  public async Task<ActionResult<CategoryItem>> DeleteCategory(int id)
   {
     var res = await categoryService.GetById(id);
     if (res == null)

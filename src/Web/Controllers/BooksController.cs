@@ -1,8 +1,8 @@
-using BookLibraryAPI.Models;
-using BookLibraryAPI.Services;
+using BookLibraryAPI.Application.Common.Interfaces;
+using BookLibraryAPI.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookLibraryAPI.Controllers;
+namespace BookLibraryAPI.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -30,7 +30,7 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
   }
 
   [HttpGet]
-  public async Task<ActionResult<Book[]>> GetBooks(
+  public async Task<ActionResult<BookItem[]>> GetBooks(
     [FromQuery] int? authorId,
     [FromQuery] int? categoryId,
     [FromQuery] string? title,
@@ -47,7 +47,7 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<Book?>> GetBook(int id)
+  public async Task<ActionResult<BookItem?>> GetBook(int id)
   {
     var book = await bookService.GetById(id);
     if (book == null)
@@ -57,7 +57,7 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
   }
 
   [HttpPost]
-  public async Task<ActionResult<Book>> CreateBook(BookSetDTO book)
+  public async Task<ActionResult<BookItem>> CreateBook(BookSetDTO book)
   {
     var validationRes = await ValidateBook(book);
     if (validationRes != null)
@@ -82,7 +82,7 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
   }
 
   [HttpPut("{id}")]
-  public async Task<ActionResult<Book>> UpdateBook(int id, [FromBody] BookSetDTO book)
+  public async Task<ActionResult<BookItem>> UpdateBook(int id, [FromBody] BookSetDTO book)
   {
     var validationRes = await ValidateBook(book);
     if (validationRes != null)
@@ -97,7 +97,7 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
   }
 
   [HttpPatch("{id}")]
-  public async Task<ActionResult<Book>> PatchBook(int id, [FromBody] BookBaseDTO book)
+  public async Task<ActionResult<BookItem>> PatchBook(int id, [FromBody] BookBaseDTO book)
   {
     var orig = await bookService.GetById(id);
     if (orig == null)

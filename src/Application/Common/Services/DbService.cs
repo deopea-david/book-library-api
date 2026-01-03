@@ -1,11 +1,10 @@
-using BookLibraryAPI.Data;
-using BookLibraryAPI.Events;
-using BookLibraryAPI.Models;
+using BookLibraryAPI.Application.Common.Interfaces;
+using BookLibraryAPI.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookLibraryAPI.Services;
+namespace BookLibraryAPI.Application.Common.Services;
 
-public abstract partial class DbService<T>(SQLiteContext context, DbSet<T> table, ILogger<DbService<T>> logger)
+public abstract partial class DbService<T>(IDbContext context, DbSet<T> table, ILogger<DbService<T>> logger)
   : IService<T>
   where T : class, IEntity
 {

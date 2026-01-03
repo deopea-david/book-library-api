@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using BookLibraryAPI.Domain.Common;
 
-namespace BookLibraryAPI.Models;
+namespace BookLibraryAPI.Domain.Entities;
 
 public class AuthorBaseDTO
 {
@@ -16,7 +17,7 @@ public class AuthorSetDTO : AuthorBaseDTO
   public new required string Name { get; set; }
 }
 
-public class Author : AuthorSetDTO, IEntity
+public class AuthorItem : AuthorSetDTO, IEntity
 {
   [Required(ErrorMessage = "Id is required")]
   public int Id { get; set; }

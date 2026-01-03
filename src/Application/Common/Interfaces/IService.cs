@@ -1,4 +1,4 @@
-namespace BookLibraryAPI.Services;
+namespace BookLibraryAPI.Application.Common.Interfaces;
 
 public interface IService<T>
   where T : class

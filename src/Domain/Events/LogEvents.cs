@@ -1,4 +1,4 @@
-namespace BookLibraryAPI.Events;
+namespace BookLibraryAPI.Domain.Events;
 
 public class LogEvents
 {

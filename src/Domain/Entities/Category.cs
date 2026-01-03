@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using BookLibraryAPI.Domain.Common;
 
-namespace BookLibraryAPI.Models;
+namespace BookLibraryAPI.Domain.Entities;
 
 public class CategoryBaseDTO
 {
@@ -16,7 +17,7 @@ public class CategorySetDTO : CategoryBaseDTO
   public new required string Name { get; set; }
 }
 
-public class Category : CategorySetDTO, IEntity
+public class CategoryItem : CategorySetDTO, IEntity
 {
   [Required(ErrorMessage = "Id is required")]
   public int Id { get; set; }

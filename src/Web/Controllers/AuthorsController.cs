@@ -1,8 +1,8 @@
-using BookLibraryAPI.Models;
-using BookLibraryAPI.Services;
+using BookLibraryAPI.Application.Common.Interfaces;
+using BookLibraryAPI.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookLibraryAPI.Controllers;
+namespace BookLibraryAPI.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -17,7 +17,7 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
   }
 
   [HttpGet]
-  public async Task<ActionResult<Author[]>> GetAuthors([FromQuery] int? id, [FromQuery] string? name)
+  public async Task<ActionResult<AuthorItem[]>> GetAuthors([FromQuery] int? id, [FromQuery] string? name)
   {
     var authors = await authorService.GetMany(id, name);
     if (!authors.Any())
@@ -28,7 +28,7 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
 
   [HttpGet]
   [Route("{id}")]
-  public async Task<ActionResult<Author>> GetAuthor(int id)
+  public async Task<ActionResult<AuthorItem>> GetAuthor(int id)
   {
     var author = await authorService.GetById(id);
     if (author == null)
@@ -38,7 +38,7 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
   }
 
   [HttpPost]
-  public async Task<ActionResult<Author>> CreateAuthor([FromBody] AuthorSetDTO author)
+  public async Task<ActionResult<AuthorItem>> CreateAuthor([FromBody] AuthorSetDTO author)
   {
     var validationRes = ValidateAuthor(author);
     if (validationRes != null)
@@ -50,7 +50,7 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
 
   [HttpPut]
   [Route("{id}")]
-  public async Task<ActionResult<Author>> UpdateAuthor(int id, [FromBody] AuthorSetDTO author)
+  public async Task<ActionResult<AuthorItem>> UpdateAuthor(int id, [FromBody] AuthorSetDTO author)
   {
     var validationRes = ValidateAuthor(author);
     if (validationRes != null)
@@ -66,7 +66,7 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
 
   [HttpPatch]
   [Route("{id}")]
-  public async Task<ActionResult<Author>> PatchAuthor(int id, [FromBody] AuthorBaseDTO author)
+  public async Task<ActionResult<AuthorItem>> PatchAuthor(int id, [FromBody] AuthorBaseDTO author)
   {
     var orig = await authorService.GetById(id);
     if (orig == null)

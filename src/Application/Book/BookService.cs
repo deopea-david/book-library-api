@@ -1,14 +1,15 @@
-using BookLibraryAPI.Data;
-using BookLibraryAPI.Models;
+using BookLibraryAPI.Application.Common.Interfaces;
+using BookLibraryAPI.Application.Common.Services;
+using BookLibraryAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookLibraryAPI.Services;
+namespace BookLibraryAPI.Application.Book;
 
-public class BookService(SQLiteContext context, ILogger<BookService> logger)
-  : DbService<Book>(context, context.Books, logger),
+public class BookService(IDbContext context, ILogger<BookService> logger)
+  : DbService<BookItem>(context, context.Books, logger),
     IBookService
 {
-  public async Task<IEnumerable<Book>> GetMany(
+  public async Task<IEnumerable<BookItem>> GetMany(
     int? authorId,
     int? categoryId,
     string? title,

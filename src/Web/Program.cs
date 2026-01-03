@@ -1,17 +1,11 @@
-using BookLibraryAPI.Data;
-using BookLibraryAPI.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<SQLiteContext>();
+builder.AddInfrastructureServices();
 
 // Register services with the DI container
-builder.Services.AddScoped<IAuthorService, AuthorService>();
-builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.AddApplicationServices();
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
