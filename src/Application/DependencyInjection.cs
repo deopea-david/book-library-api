@@ -2,6 +2,7 @@ using BookLibraryAPI.Application.Author;
 using BookLibraryAPI.Application.Book;
 using BookLibraryAPI.Application.Category;
 using BookLibraryAPI.Application.Common.Interfaces;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

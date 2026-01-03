@@ -484,4 +484,4 @@ $RECYCLE.BIN/
 *.swp
 
 # SQLite database file
-book-library.db
+book-library.db*

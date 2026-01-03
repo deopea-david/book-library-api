@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/BookLibraryAPI.csproj",
+        "${workspaceFolder}/BookLibraryAPI.sln",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/BookLibraryAPI.csproj",
+        "${workspaceFolder}/BookLibraryAPI.sln",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
@@ -33,7 +33,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/BookLibraryAPI.csproj"
+        "${workspaceFolder}/BookLibraryAPI.sln"
       ],
       "problemMatcher": "$msCompile"
     }

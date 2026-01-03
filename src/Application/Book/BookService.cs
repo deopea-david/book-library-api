@@ -2,10 +2,11 @@ using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookLibraryAPI.Application.Book;
 
-public class BookService(IDbContext context, ILogger<BookService> logger)
+public class BookService(IAppDbContext context, ILogger<BookService> logger)
   : DbService<BookItem>(context, context.Books, logger),
     IBookService
 {

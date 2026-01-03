@@ -2,10 +2,11 @@ using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookLibraryAPI.Application.Author;
 
-public class AuthorService(IDbContext context, ILogger<AuthorService> logger)
+public class AuthorService(IAppDbContext context, ILogger<AuthorService> logger)
   : DbService<AuthorItem>(context, context.Authors, logger),
     IAuthorService
 {

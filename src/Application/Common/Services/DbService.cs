@@ -1,10 +1,11 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookLibraryAPI.Application.Common.Services;
 
-public abstract partial class DbService<T>(IDbContext context, DbSet<T> table, ILogger<DbService<T>> logger)
+public abstract partial class DbService<T>(IAppDbContext context, DbSet<T> table, ILogger<DbService<T>> logger)
   : IService<T>
   where T : class, IEntity
 {
@@ -27,7 +28,6 @@ public abstract partial class DbService<T>(IDbContext context, DbSet<T> table, I
 
   public virtual T OnCreate(T entity)
   {
-    entity.CreatedAt = DateTime.Now;
     return entity;
   }
 
@@ -41,7 +41,7 @@ public abstract partial class DbService<T>(IDbContext context, DbSet<T> table, I
 
   public virtual T OnUpdate(T entity)
   {
-    entity.UpdatedAt = DateTime.Now;
+    entity.UpdatedAt = DateTime.UtcNow;
     return entity;
   }
 

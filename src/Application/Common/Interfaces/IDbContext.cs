@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookLibraryAPI.Application.Common.Interfaces;
 
-public interface IDbContext
+public interface IAppDbContext
 {
   DbSet<AuthorItem> Authors { get; set; }
   DbSet<BookItem> Books { get; set; }
   DbSet<CategoryItem> Categories { get; set; }
-  Task<int> SaveChangesAsync();
-  Task<int> SaveChangesAsync(CancellationToken? cancellationToken);
+  Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

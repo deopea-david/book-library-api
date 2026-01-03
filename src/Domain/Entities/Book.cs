@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using BookLibraryAPI.Domain.Common;
 
 namespace BookLibraryAPI.Domain.Entities;
@@ -36,4 +37,7 @@ public class BookItem : BookSetDTO, IEntity
   [Required(ErrorMessage = "Created timestamp is required")]
   public DateTime CreatedAt { get; set; }
   public DateTime? UpdatedAt { get; set; }
+
+  public AuthorItem? Author { get; set; }
+  public CategoryItem? Category { get; set; }
 }

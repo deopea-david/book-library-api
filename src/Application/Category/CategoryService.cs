@@ -2,10 +2,11 @@ using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookLibraryAPI.Application.Category;
 
-public class CategoryService(IDbContext context, ILogger<CategoryService> logger)
+public class CategoryService(IAppDbContext context, ILogger<CategoryService> logger)
   : DbService<CategoryItem>(context, context.Categories, logger),
     ICategoryService
 {

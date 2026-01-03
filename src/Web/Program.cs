@@ -1,3 +1,5 @@
+using BookLibraryAPI.Infra.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddInfrastructureServices();
@@ -16,6 +18,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+  // Initialise database
+  await app.InitialiseDatabaseAsync();
+
   // Add OpenAPI 3.0 document serving middleware
   // Available at: http://localhost:<port>/swagger/v1/swagger.json
   app.UseOpenApi();
