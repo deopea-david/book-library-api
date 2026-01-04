@@ -9,19 +9,19 @@ A RESTful API built with ASP.NET Core for managing a personal book library, impl
 This project follows Clean Architecture principles, organizing code into distinct layers with clear dependencies flowing inward:
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                           Web                                 │
-│                    (Controllers, Program.cs)                  │
-├───────────────────────────────────────────────────────────────┤
-│                      Infrastructure                           │
-│              (EF Core, DbContext, Configurations)             │
-├───────────────────────────────────────────────────────────────┤
-│                       Application                             │
-│                  (Services, Interfaces)                       │
-├───────────────────────────────────────────────────────────────┤
-│                         Domain                                │
-│                   (Entities, Common)                          │
-└───────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                           Web                            │
+│                (Controllers, Program.cs)                 │
+├────────────────────────────────────────────────────────────┤
+│                      Infrastructure                      │
+│           (EF Core, DbContext, Configurations)           │
+├────────────────────────────────────────────────────────────┤
+│                       Application                        │
+│                  (Services, Interfaces)                  │
+├────────────────────────────────────────────────────────────┤
+│                          Domain                          │
+│                    (Entities, Common)                    │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ### Layer Responsibilities
