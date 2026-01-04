@@ -1,19 +1,58 @@
 # Book Library API
 
-A RESTful API built with ASP.NET Core for managing a personal book library. This project demonstrates modern .NET practices and core C# concepts including Object-Oriented Programming (OOP), LINQ, async/await patterns, dependency injection, Entity Framework Core, DTOs, and clean architecture patterns.
+A RESTful API built with ASP.NET Core for managing a personal book library, implementing **Clean Architecture** principles. This project demonstrates modern .NET practices and core C# concepts including Object-Oriented Programming (OOP), LINQ, async/await patterns, dependency injection, Entity Framework Core, DTOs, and clean architecture patterns.
+
+> Inspired by [jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) - a Clean Architecture Solution Template for ASP.NET Core.
+
+## Clean Architecture
+
+This project follows Clean Architecture principles, organizing code into distinct layers with clear dependencies flowing inward:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                           Web                                 │
+│                    (Controllers, Program.cs)                  │
+├───────────────────────────────────────────────────────────────┤
+│                      Infrastructure                           │
+│              (EF Core, DbContext, Configurations)             │
+├───────────────────────────────────────────────────────────────┤
+│                       Application                             │
+│                  (Services, Interfaces)                       │
+├───────────────────────────────────────────────────────────────┤
+│                         Domain                                │
+│                   (Entities, Common)                          │
+└───────────────────────────────────────────────────────────────┘
+```
+
+### Layer Responsibilities
+
+| Layer              | Responsibility                                                                            | Dependencies        |
+| ------------------ | ----------------------------------------------------------------------------------------- | ------------------- |
+| **Domain**         | Core business entities and interfaces (`IEntity`, DTOs)                                   | None                |
+| **Application**    | Business logic, service interfaces (`IBookService`, `IAuthorService`, `ICategoryService`) | Domain              |
+| **Infrastructure** | Data access, EF Core implementation, database configuration                               | Domain, Application |
+| **Web**            | API endpoints, controllers, HTTP pipeline configuration                                   | All layers          |
+
+### Key Benefits
+
+- **Separation of Concerns** - Each layer has a single responsibility
+- **Testability** - Business logic can be tested independently of infrastructure
+- **Flexibility** - Easy to swap implementations (e.g., different databases)
+- **Maintainability** - Changes in one layer don't affect others
 
 ## Educational Purpose
 
 This project was designed to practice and demonstrate key C# and .NET concepts:
 
-| Concept                  | How It's Applied                                                                    |
-| ------------------------ | ----------------------------------------------------------------------------------- |
-| **OOP**                  | Models (Book, Author, Category), inheritance, interfaces (`IEntity`, `IService<T>`) |
-| **LINQ**                 | Filtering books by author, category, title, publication date, ISBN, and read status |
-| **Async/Await**          | All API endpoints and service methods use async patterns                            |
-| **Dependency Injection** | Services injected into controllers via constructor injection                        |
-| **Interfaces**           | `IService<T>`, `IBookService`, `IAuthorService`, `ICategoryService` for abstraction |
-| **Generic Programming**  | Generic base service (`DbService<T>`) for reusable CRUD operations                  |
+| Concept                  | How It's Applied                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| **Clean Architecture**   | Four-layer architecture with Domain, Application, Infrastructure, and Web layers     |
+| **OOP**                  | Models (Book, Author, Category), inheritance, interfaces (`IEntity`, `IService<T>`)  |
+| **LINQ**                 | Filtering books by author, category, title, publication date, ISBN, and read status  |
+| **Async/Await**          | All API endpoints and service methods use async patterns                             |
+| **Dependency Injection** | Services registered via `DependencyInjection.cs` in each layer                       |
+| **Interfaces**           | `IAppDbContext`, `IService<T>`, `IBookService`, `IAuthorService`, `ICategoryService` |
+| **Generic Programming**  | Generic base service (`DbService<T>`) for reusable CRUD operations                   |
 
 ## Features
 
@@ -24,6 +63,7 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 - **Data Validation** - Comprehensive validation with clear error messages
 - **OpenAPI/Swagger** - Interactive API documentation (available in development mode)
 - **SQLite Database** - Lightweight, file-based database for easy setup
+- **Automatic Data Seeding** - Development database populated with realistic fake data using Bogus
 
 ## Technology Stack
 
@@ -31,6 +71,7 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 - **ASP.NET Core** - Web API framework
 - **Entity Framework Core 10.0** - ORM for database operations
 - **SQLite** - Embedded database
+- **Bogus** - Fake data generator for seeding
 - **NSwag** - OpenAPI/Swagger generation
 - **C# 12** - Modern C# features (primary constructors, required properties, file-scoped namespaces)
 
@@ -38,29 +79,54 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 
 ```
 BookLibraryAPI/
-├── Controllers/          # API endpoints (RESTful controllers)
-│   ├── AuthorsController.cs
-│   ├── BooksController.cs
-│   └── CategoriesController.cs
-├── Data/                # Database context and configuration
-│   └── SQLiteContext.cs
-├── Events/              # Structured logging event IDs
-│   └── LogEvents.cs
-├── Models/              # Domain models, DTOs, and interfaces
-│   ├── Author.cs        # Author entity with BaseDTO/SetDTO hierarchy
-│   ├── Book.cs          # Book entity with BaseDTO/SetDTO hierarchy
-│   ├── Category.cs      # Category entity with BaseDTO/SetDTO hierarchy
-│   └── Entity.cs        # IEntity interface for common properties
-├── Services/            # Business logic layer
-│   ├── AuthorService.cs
-│   ├── BookService.cs
-│   ├── CategoryService.cs
-│   ├── DbService.cs     # Generic base service with CRUD operations
-│   ├── IAuthorService.cs
-│   ├── IBookService.cs
-│   ├── ICategoryService.cs
-│   └── IService.cs      # Generic service interface
-└── Program.cs           # Application entry point and DI configuration
+├── src/
+│   ├── Domain/                    # Core business entities
+│   │   ├── Common/
+│   │   │   └── Entity.cs          # IEntity interface
+│   │   ├── Entities/
+│   │   │   ├── Author.cs          # Author entity + DTOs
+│   │   │   ├── Book.cs            # Book entity + DTOs
+│   │   │   └── Category.cs        # Category entity + DTOs
+│   │   └── Events/
+│   │       └── LogEvents.cs       # Structured logging event IDs
+│   │
+│   ├── Application/               # Business logic layer
+│   │   ├── Author/
+│   │   │   └── AuthorService.cs
+│   │   ├── Book/
+│   │   │   └── BookService.cs
+│   │   ├── Category/
+│   │   │   └── CategoryService.cs
+│   │   ├── Common/
+│   │   │   ├── Interfaces/        # Service contracts
+│   │   │   │   ├── IAuthorService.cs
+│   │   │   │   ├── IBookService.cs
+│   │   │   │   ├── ICategoryService.cs
+│   │   │   │   ├── IDbContext.cs
+│   │   │   │   └── IService.cs
+│   │   │   └── Services/
+│   │   │       └── DbService.cs   # Generic base service
+│   │   └── DependencyInjection.cs
+│   │
+│   ├── Infra/                     # Infrastructure layer
+│   │   ├── Configurations/        # EF Core entity configurations
+│   │   │   ├── AuthorItemConfiguration.cs
+│   │   │   ├── BookItemConfiguration.cs
+│   │   │   ├── CategoryItemConfiguration.cs
+│   │   │   └── EntityConfiguration.cs
+│   │   ├── Data/
+│   │   │   ├── AppDbContext.cs
+│   │   │   └── AppDbContextInitialiser.cs
+│   │   └── DependencyInjection.cs
+│   │
+│   └── Web/                       # Presentation layer
+│       ├── Controllers/
+│       │   ├── AuthorsController.cs
+│       │   ├── BooksController.cs
+│       │   └── CategoriesController.cs
+│       └── Program.cs
+│
+└── BookLibraryAPI.sln
 ```
 
 ## Getting Started
@@ -94,6 +160,7 @@ dotnet build
 4. Run the application:
 
 ```bash
+cd src/Web
 dotnet run
 ```
 
@@ -101,9 +168,40 @@ The API will be available at `https://localhost:<port>` or `http://localhost:<po
 
 ### Database
 
-The SQLite database (`book-library.db`) will be automatically created on first run. Entity Framework Core will handle database creation and migrations. The database file is stored in the project root directory.
+The template uses **SQLite** as the default database provider. The SQLite database (`book-library.db`) will be automatically created on first run. The database file is stored in the Web project directory.
 
-**Note**: The database uses Entity Framework Core migrations. If you need to recreate the database, delete the `book-library.db` file and restart the application.
+#### Database Initialisation
+
+On application startup (in Development mode), the database is automatically **deleted**, **recreated**, and **seeded** using `AppDbContextInitialiser`. This is a practical strategy for early development, avoiding the overhead of maintaining migrations while keeping the schema and sample data in sync with the domain model.
+
+This process includes:
+
+- Deleting the existing database
+- Recreating the schema from the current model
+- Seeding sample data using [Bogus](https://github.com/bchavez/Bogus) fake data generator:
+  - **100 Authors** with realistic names and bios
+  - **25 Categories** with commerce-related names
+  - **1,000 Books** with randomized titles, ISBNs, and relationships
+
+```csharp
+// src/Web/Program.cs
+if (app.Environment.IsDevelopment())
+{
+    await app.InitialiseDatabaseAsync();
+}
+```
+
+For **production environments**, consider using EF Core migrations or migration bundles during deployment. For more information, see [Database Initialisation Strategies for EF Core](https://jasontaylor.dev/ef-core-database-initialisation-strategies/).
+
+#### Changing Database Provider
+
+To switch to a different database (PostgreSQL, SQL Server, etc.), update the `AddInfrastructureServices` method in `src/Infra/DependencyInjection.cs`:
+
+```csharp
+// Current SQLite configuration
+var connectionString = new SqliteConnectionStringBuilder() { DataSource = "book-library.db" }.ToString();
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
+```
 
 ## API Endpoints
 
@@ -231,6 +329,43 @@ The SQLite database (`book-library.db`) will be automatically created on first r
 
 ## Architecture
 
+### Dependency Injection
+
+Each layer has its own `DependencyInjection.cs` file that registers its services with the DI container:
+
+```csharp
+// src/Web/Program.cs
+builder.AddInfrastructureServices();  // Register Infrastructure (DbContext, etc.)
+builder.AddApplicationServices();     // Register Application (Services)
+```
+
+**Infrastructure Services** (`src/Infra/DependencyInjection.cs`):
+
+- `AppDbContext` - EF Core database context
+- `IAppDbContext` - Database context interface for abstraction
+- `AppDbContextInitialiser` - Database seeding service
+
+**Application Services** (`src/Application/DependencyInjection.cs`):
+
+- `IAuthorService` → `AuthorService`
+- `IBookService` → `BookService`
+- `ICategoryService` → `CategoryService`
+
+### Database Abstraction
+
+The `IAppDbContext` interface allows the Application layer to remain independent of EF Core:
+
+```csharp
+// src/Application/Common/Interfaces/IDbContext.cs
+public interface IAppDbContext
+{
+    DbSet<AuthorItem> Authors { get; set; }
+    DbSet<BookItem> Books { get; set; }
+    DbSet<CategoryItem> Categories { get; set; }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+}
+```
+
 ### DTO Pattern
 
 The project uses a hierarchical DTO pattern to separate concerns and provide flexibility:
@@ -262,15 +397,15 @@ The service layer follows a generic pattern for code reuse:
   - `BookService` - Adds filtering by multiple criteria
   - `AuthorService` - Adds filtering by ID and name
   - `CategoryService` - Adds filtering by ID and name
-- **Dependency Injection** - All services registered as scoped services in `Program.cs`
+- **Dependency Injection** - All services registered as scoped services
 - **Interface-Based Design** - All services implement interfaces for testability
 
 ### Automatic Timestamps
 
 The `CreatedAt` and `UpdatedAt` fields are managed through the `IEntity` interface:
 
-- **CreatedAt** - Automatically set to `DateTime.Now` in `OnCreate` method
-- **UpdatedAt** - Automatically set to `DateTime.Now` in `OnUpdate` method
+- **CreatedAt** - Automatically set to `DateTime.UtcNow` in `OnCreate` method
+- **UpdatedAt** - Automatically set to `DateTime.UtcNow` in `OnUpdate` method
 - **Server-Side Only** - Cannot be set by client requests (protected via DTO pattern)
 - **Always Included** - Timestamps are included in all API responses
 - **Consistent** - All entities (`Book`, `Author`, `Category`) follow the same pattern
@@ -278,9 +413,10 @@ The `CreatedAt` and `UpdatedAt` fields are managed through the `IEntity` interfa
 ### Entity Framework Core
 
 - **SQLite Provider** - Lightweight, file-based database
-- **DbContext** - `SQLiteContext` manages database connections and entity sets
+- **DbContext** - `AppDbContext` manages database connections and entity sets
 - **Code-First Approach** - Database schema defined by entity classes
-- **Automatic Migrations** - Database created automatically on first run
+- **Fluent Configuration** - Entity configurations in separate files (`src/Infra/Configurations/`)
+- **Automatic Seeding** - Database recreated and seeded on startup in development
 
 ## API Documentation
 
@@ -347,8 +483,8 @@ Error responses follow this format:
 
 ### Technical Details
 
-- **Database**: SQLite database file (`book-library.db`) is created automatically in the project root
-- **Timestamps**: All timestamps use `DateTime.Now` (local time)
+- **Database**: SQLite database file (`book-library.db`) is created automatically in the Web project directory
+- **Timestamps**: All timestamps use `DateTime.UtcNow` (UTC time)
 - **HTTPS**: The API uses HTTPS redirection in production
 - **Logging**: Structured logging using `ILogger<T>` with event IDs defined in `LogEvents`
 - **Null Safety**: The project uses nullable reference types (`<Nullable>enable</Nullable>`)
@@ -360,11 +496,14 @@ Error responses follow this format:
 
 ### Key Design Decisions
 
-1. **Generic Service Pattern**: `DbService<T>` reduces code duplication across all entity types
-2. **DTO Hierarchy**: BaseDTO → SetDTO → Entity pattern provides flexibility for different operations
-3. **Interface Segregation**: Separate interfaces for each service (`IBookService`, `IAuthorService`, etc.)
-4. **Reflection-Based Updates**: The `Update` method uses reflection to copy properties from DTO to entity
-5. **Validation**: Manual validation in controllers ensures business rules are enforced
+1. **Clean Architecture** - Four-layer architecture for separation of concerns
+2. **Generic Service Pattern**: `DbService<T>` reduces code duplication across all entity types
+3. **DTO Hierarchy**: BaseDTO → SetDTO → Entity pattern provides flexibility for different operations
+4. **Interface Segregation**: Separate interfaces for each service (`IBookService`, `IAuthorService`, etc.)
+5. **Database Abstraction**: `IAppDbContext` interface decouples Application from Infrastructure
+6. **Reflection-Based Updates**: The `Update` method uses reflection to copy properties from DTO to entity
+7. **Validation**: Manual validation in controllers ensures business rules are enforced
+8. **Development Seeding**: Automatic database recreation and seeding in development mode
 
 ### Known Limitations
 
@@ -404,19 +543,21 @@ Potential improvements for this project:
 - Health checks endpoint
 - Rate limiting
 - Request/response logging middleware
+- Production migration strategy
 
 ## Learning Outcomes
 
 By studying or working with this project, you'll gain experience with:
 
-1. **RESTful API Design** - Proper HTTP methods, status codes, and resource naming
-2. **Entity Framework Core** - ORM usage, DbContext, DbSet, LINQ queries
-3. **Dependency Injection** - Service registration, constructor injection, scoped lifetimes
-4. **Async Programming** - Async/await patterns, Task-based operations
-5. **LINQ** - Query syntax, filtering, projection, deferred execution
-6. **DTOs and Validation** - Data transfer objects, model validation, separation of concerns
-7. **Generic Programming** - Generic classes, constraints, code reuse
-8. **Modern C#** - Latest language features and best practices
+1. **Clean Architecture** - Layered architecture with clear dependency rules
+2. **RESTful API Design** - Proper HTTP methods, status codes, and resource naming
+3. **Entity Framework Core** - ORM usage, DbContext, DbSet, LINQ queries
+4. **Dependency Injection** - Service registration, constructor injection, scoped lifetimes
+5. **Async Programming** - Async/await patterns, Task-based operations
+6. **LINQ** - Query syntax, filtering, projection, deferred execution
+7. **DTOs and Validation** - Data transfer objects, model validation, separation of concerns
+8. **Generic Programming** - Generic classes, constraints, code reuse
+9. **Modern C#** - Latest language features and best practices
 
 ## License
 
