@@ -2,6 +2,7 @@
 using BookLibraryAPI.Domain.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace BookLibraryAPI.Infra.Data;
@@ -14,7 +15,7 @@ public static class InitialiserExtensions
 
     var initialiser = scope.ServiceProvider.GetRequiredService<AppDbContextInitialiser>();
 
-    await initialiser.InitialiseAsync();
+    await initialiser.InitialiseAsync(app.Environment.IsDevelopment());
     await initialiser.SeedData();
   }
 }
@@ -30,11 +31,12 @@ public class AppDbContextInitialiser
     _context = context;
   }
 
-  public async Task InitialiseAsync()
+  public async Task InitialiseAsync(bool? delete = false)
   {
     try
     {
-      await _context.Database.EnsureDeletedAsync();
+      if (delete == true)
+        await _context.Database.EnsureDeletedAsync();
       await _context.Database.EnsureCreatedAsync();
     }
     catch (Exception ex)

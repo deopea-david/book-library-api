@@ -15,11 +15,12 @@ builder.Services.AddOpenApiDocument();
 
 var app = builder.Build();
 
+await app.InitialiseDatabaseAsync();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
   // Initialise database
-  await app.InitialiseDatabaseAsync();
 
   // Add OpenAPI 3.0 document serving middleware
   // Available at: http://localhost:<port>/swagger/v1/swagger.json
