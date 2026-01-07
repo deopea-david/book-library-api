@@ -1,5 +1,6 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Common;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -18,12 +19,12 @@ public abstract partial class DbService<T>(IAppDbContext context, DbSet<T> table
 
   public async Task<T?> GetById(int id)
   {
-    return await table.FindAsync(id);
+    return await table.Cacheable().FirstAsync(e => e.Id == id);
   }
 
   public async Task<IEnumerable<T>> GetMany()
   {
-    return await table.ToListAsync();
+    return await table.Cacheable().ToListAsync();
   }
 
   public virtual T OnCreate(T entity)

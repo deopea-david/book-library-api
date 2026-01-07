@@ -1,6 +1,7 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ public class CategoryService(IAppDbContext context, ILogger<CategoryService> log
   {
     return await context
       .Categories.Where((c) => (id == null || id == c.Id) && (name == null || name == c.Name))
+      .Cacheable()
       .ToListAsync();
   }
 }

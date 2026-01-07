@@ -1,6 +1,7 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ public class AuthorService(IAppDbContext context, ILogger<AuthorService> logger)
   {
     return await context
       .Authors.Where((a) => (id == null || id == a.Id) && (name == null || name == a.Name))
+      .Cacheable()
       .ToListAsync();
   }
 }

@@ -1,6 +1,7 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Application.Common.Services;
 using BookLibraryAPI.Domain.Entities;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -29,6 +30,7 @@ public class BookService(IAppDbContext context, ILogger<BookService> logger)
           && (isbn == null || isbn == book.ISBN)
           && (isRead == null || isRead == book.IsRead)
       )
+      .Cacheable()
       .ToListAsync();
   }
 }
