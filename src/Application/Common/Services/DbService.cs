@@ -28,6 +28,7 @@ public abstract partial class DbService<T>(IAppDbContext context, DbSet<T> table
 
   public virtual T OnCreate(T entity)
   {
+    entity.CreatedAt = DateTime.UtcNow;
     return entity;
   }
 

@@ -10,7 +10,6 @@ public class EntityConfiguration<T> : IEntityTypeConfiguration<T>
   public void Configure(EntityTypeBuilder<T> builder)
   {
     builder.Property(t => t.Id).IsRequired().UseAutoincrement();
-    builder.Property(t => t.CreatedAt).IsRequired().ValueGeneratedOnAdd().HasDefaultValueSql("current_timestamp");
-    builder.Property(t => t.UpdatedAt).ValueGeneratedOnUpdate();
+    builder.Property(t => t.CreatedAt).IsRequired();
   }
 }
