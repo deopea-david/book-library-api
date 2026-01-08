@@ -10,6 +10,8 @@ public interface IBookService : IService<BookItem>
     string? title = null,
     DateTime? publishedAt = null,
     string? isbn = null,
-    bool? isRead = null
+    bool? isRead = null,
+    int? page = DefaultPage,
+    int? size = DefaultPageSize
   );
 }

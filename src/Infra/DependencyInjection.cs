@@ -46,7 +46,7 @@ public static partial class DependencyInjection
             },
             TimeSpan.FromMinutes(1)
           )
-          .ConfigureLogging(true)
+          .ConfigureLogging(true, (e) => Console.WriteLine(e.Message))
           .UseDbCallsIfCachingProviderIsDown(TimeSpan.FromSeconds(10))
       );
 

@@ -17,9 +17,12 @@ public class BookService(IAppDbContext context, ILogger<BookService> logger)
     string? title,
     DateTime? publishedAt,
     string? isbn,
-    bool? isRead
+    bool? isRead,
+    int? page,
+    int? size
   )
   {
+    var (safePage, safeSize) = ParsePageAndSize(page, size);
     return await context
       .Books.Where(
         (book) =>
@@ -30,6 +33,8 @@ public class BookService(IAppDbContext context, ILogger<BookService> logger)
           && (isbn == null || isbn == book.ISBN)
           && (isRead == null || isRead == book.IsRead)
       )
+      .Skip((safePage - 1) * safeSize)
+      .Take(safeSize)
       .Cacheable()
       .ToListAsync();
   }

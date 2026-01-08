@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Entities;
+using BookLibraryAPI.Web.Validation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookLibraryAPI.Web.Controllers;
@@ -17,9 +19,14 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
   }
 
   [HttpGet]
-  public async Task<ActionResult<AuthorItem[]>> GetAuthors([FromQuery] int? id, [FromQuery] string? name)
+  public async Task<ActionResult<AuthorItem[]>> GetAuthors(
+    [FromQuery] int? id,
+    [FromQuery] string? name,
+    [FromQuery] [MinInt(1)] int? page,
+    [FromQuery] [Range(1, 100)] int? pageSize
+  )
   {
-    var authors = await authorService.GetMany(id, name);
+    var authors = await authorService.GetMany(id, name, page, pageSize);
     if (!authors.Any())
       return NotFound(new { message = "No authors matching the criteria were found" });
 
