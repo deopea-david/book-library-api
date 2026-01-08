@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Entities;
+using BookLibraryAPI.Web.Validation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookLibraryAPI.Controllers;
@@ -17,9 +19,14 @@ public class CategoriesController(ICategoryService categoryService) : Controller
   }
 
   [HttpGet]
-  public async Task<ActionResult<CategoryItem>> GetCategories([FromQuery] int? id, [FromQuery] string? name)
+  public async Task<ActionResult<CategoryItem>> GetCategories(
+    [FromQuery] int? id,
+    [FromQuery] string? name,
+    [FromQuery] [MinInt(1)] int? page,
+    [FromQuery] [Range(1, 100)] int? pageSize
+  )
   {
-    var categories = await categoryService.GetMany(id, name);
+    var categories = await categoryService.GetMany(id, name, page, pageSize);
     if (!categories.Any())
       return NotFound(new { message = "No categories matching the criteria were found" });
 

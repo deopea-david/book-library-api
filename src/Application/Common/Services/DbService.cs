@@ -1,5 +1,6 @@
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Common;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +10,16 @@ public abstract partial class DbService<T>(IAppDbContext context, DbSet<T> table
   : IService<T>
   where T : class, IEntity
 {
+  public const int DefaultPage = 1;
+  public const int DefaultPageSize = 25;
+
+  public (int page, int size) ParsePageAndSize(int? page, int? size)
+  {
+    var safePage = page == null ? DefaultPage : int.Max((int)page, 1);
+    var saveSize = size == null ? DefaultPageSize : int.Max((int)size, 1);
+    return (safePage, saveSize);
+  }
+
   public async Task<int> Delete(T entity)
   {
     table.Remove(entity);
@@ -18,16 +29,18 @@ public abstract partial class DbService<T>(IAppDbContext context, DbSet<T> table
 
   public async Task<T?> GetById(int id)
   {
-    return await table.FindAsync(id);
+    return await table.Cacheable().FirstAsync(e => e.Id == id);
   }
 
-  public async Task<IEnumerable<T>> GetMany()
+  public async Task<IEnumerable<T>> GetMany(int? page = null, int? size = null)
   {
-    return await table.ToListAsync();
+    var (safePage, safeSize) = ParsePageAndSize(page, size);
+    return await table.Cacheable().Skip((safePage - 1) * safeSize).Take(safeSize).ToListAsync();
   }
 
   public virtual T OnCreate(T entity)
   {
+    entity.CreatedAt = DateTime.UtcNow;
     return entity;
   }
 

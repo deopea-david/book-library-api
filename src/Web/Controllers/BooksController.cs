@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using BookLibraryAPI.Application.Common.Interfaces;
 using BookLibraryAPI.Domain.Entities;
+using BookLibraryAPI.Web.Validation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookLibraryAPI.Web.Controllers;
@@ -36,10 +38,12 @@ public class BooksController(IAuthorService authorService, IBookService bookServ
     [FromQuery] string? title,
     [FromQuery] DateTime? publishedAt,
     [FromQuery] string? isbn,
-    [FromQuery] bool? isRead
+    [FromQuery] bool? isRead,
+    [FromQuery] [MinInt(1)] int? page,
+    [FromQuery] [Range(1, 100)] int? pageSize
   )
   {
-    var books = await bookService.GetMany(authorId, categoryId, title, publishedAt, isbn, isRead);
+    var books = await bookService.GetMany(authorId, categoryId, title, publishedAt, isbn, isRead, page, pageSize);
     if (!books.Any())
       return NotFound(new { message = "No books matching the criteria were found" });
 

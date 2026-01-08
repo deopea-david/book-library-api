@@ -1,0 +1,70 @@
+services:
+  web:
+    build:
+      context: .
+      target: final
+    ports:
+      - 8080:8080
+    secrets:
+      - db-passfile
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /source/src
+          ignore:
+            - "**/bin/"
+            - "**/obj/"
+        - action: rebuild
+          path: ./Dockerfile
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-data:/data
+
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=book-library
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    develop:
+      watch:
+        - action: restart
+          path: ./.secrets/db-password.txt
+volumes:
+  db-data:
+  redis-data:
+secrets:
+  db-passfile:
+    file: ./.secrets/db-passfile.txt
+  db-password:
+    file: ./.secrets/db-password.txt

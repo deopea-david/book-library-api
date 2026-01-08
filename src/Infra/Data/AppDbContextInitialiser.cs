@@ -19,17 +19,8 @@ public static class InitialiserExtensions
   }
 }
 
-public class AppDbContextInitialiser
+public class AppDbContextInitialiser(ILogger<AppDbContextInitialiser> _logger, AppDbContext _context)
 {
-  private readonly ILogger<AppDbContextInitialiser> _logger;
-  private readonly AppDbContext _context;
-
-  public AppDbContextInitialiser(ILogger<AppDbContextInitialiser> logger, AppDbContext context)
-  {
-    _logger = logger;
-    _context = context;
-  }
-
   public async Task InitialiseAsync()
   {
     try

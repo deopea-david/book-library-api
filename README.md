@@ -53,16 +53,20 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 | **Dependency Injection** | Services registered via `DependencyInjection.cs` in each layer                       |
 | **Interfaces**           | `IAppDbContext`, `IService<T>`, `IBookService`, `IAuthorService`, `ICategoryService` |
 | **Generic Programming**  | Generic base service (`DbService<T>`) for reusable CRUD operations                   |
+| **Caching**              | EF Core second-level caching with Memory Cache and Redis support                     |
+| **Containerization**     | Docker Compose with PostgreSQL and Redis for production-like environments            |
 
 ## Features
 
 - **CRUD Operations** for Books, Authors, and Categories
 - **Advanced Filtering** - Query books by author, category, title, publication date, ISBN, and read status
+- **Pagination** - All list endpoints support `page` and `size` query parameters
 - **Partial Updates** - Support for both PUT (full update) and PATCH (partial update) operations
 - **Automatic Timestamps** - `CreatedAt` and `UpdatedAt` fields are automatically managed
 - **Data Validation** - Comprehensive validation with clear error messages
 - **OpenAPI/Swagger** - Interactive API documentation (available in development mode)
-- **SQLite Database** - Lightweight, file-based database for easy setup
+- **EF Core Second-Level Caching** - Memory cache (development) and Redis (production)
+- **Docker Compose Support** - Production-ready containerization with PostgreSQL and Redis
 - **Automatic Data Seeding** - Development database populated with realistic fake data using Bogus
 
 ## Technology Stack
@@ -70,7 +74,11 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 - **.NET 10.0** - Latest .NET framework
 - **ASP.NET Core** - Web API framework
 - **Entity Framework Core 10.0** - ORM for database operations
-- **SQLite** - Embedded database
+- **EFCoreSecondLevelCacheInterceptor** - Second-level caching for EF Core
+- **SQLite** - Embedded database (development)
+- **PostgreSQL** - Production database (Docker)
+- **Redis** - Distributed cache (Docker/production)
+- **Docker & Docker Compose** - Containerization
 - **Bogus** - Fake data generator for seeding
 - **NSwag** - OpenAPI/Swagger generation
 - **C# 12** - Modern C# features (primary constructors, required properties, file-scoped namespaces)
@@ -79,6 +87,8 @@ This project was designed to practice and demonstrate key C# and .NET concepts:
 
 ```
 BookLibraryAPI/
+├── compose.yaml                   # Docker Compose configuration
+├── Dockerfile                     # Multi-stage Docker build
 ├── src/
 │   ├── Domain/                    # Core business entities
 │   │   ├── Common/
@@ -105,7 +115,7 @@ BookLibraryAPI/
 │   │   │   │   ├── IDbContext.cs
 │   │   │   │   └── IService.cs
 │   │   │   └── Services/
-│   │   │       └── DbService.cs   # Generic base service
+│   │   │       └── DbService.cs   # Generic base service with pagination
 │   │   └── DependencyInjection.cs
 │   │
 │   ├── Infra/                     # Infrastructure layer
@@ -117,6 +127,8 @@ BookLibraryAPI/
 │   │   ├── Data/
 │   │   │   ├── AppDbContext.cs
 │   │   │   └── AppDbContextInitialiser.cs
+│   │   ├── Options/
+│   │   │   └── CacheOptions.cs    # Redis cache configuration
 │   │   └── DependencyInjection.cs
 │   │
 │   └── Web/                       # Presentation layer
@@ -124,6 +136,8 @@ BookLibraryAPI/
 │       │   ├── AuthorsController.cs
 │       │   ├── BooksController.cs
 │       │   └── CategoriesController.cs
+│       ├── appsettings.json       # Production config (PostgreSQL + Redis)
+│       ├── appsettings.Development.json  # Dev config (SQLite + Memory Cache)
 │       └── Program.cs
 │
 └── BookLibraryAPI.sln
@@ -135,8 +149,9 @@ BookLibraryAPI/
 
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
 - A code editor (Visual Studio, VS Code, Rider, etc.)
+- [Docker](https://www.docker.com/get-started) (optional, for containerized deployment)
 
-### Installation
+### Local Development (SQLite + Memory Cache)
 
 1. Clone the repository:
 
@@ -166,11 +181,56 @@ dotnet run
 
 The API will be available at `https://localhost:<port>` or `http://localhost:<port>`.
 
-### Database
+### Docker Compose (PostgreSQL + Redis)
 
-The template uses **SQLite** as the default database provider. The SQLite database (`book-library.db`) will be automatically created on first run. The database file is stored in the Web project directory.
+For a production-like environment with PostgreSQL and Redis:
 
-#### Database Initialisation
+1. Create the secrets directory and files:
+
+```bash
+mkdir -p .secrets
+echo "your-db-password" > .secrets/db-password.txt
+echo "localhost:5432:book-library:postgres:your-db-password" > .secrets/db-passfile.txt
+```
+
+2. Start the services:
+
+```bash
+docker compose up -d
+```
+
+This will start:
+
+- **Web API** on port `8080`
+- **PostgreSQL** database on port `5432`
+- **Redis** cache on port `6379`
+
+3. For development with hot reload:
+
+```bash
+docker compose watch
+```
+
+The API will be available at `http://localhost:8080`.
+
+#### Docker Services
+
+| Service | Image      | Port | Description          |
+| ------- | ---------- | ---- | -------------------- |
+| `web`   | Custom     | 8080 | ASP.NET Core Web API |
+| `db`    | PostgreSQL | 5432 | Primary database     |
+| `redis` | Redis      | 6379 | Second-level cache   |
+
+## Database
+
+The project supports multiple database providers:
+
+| Environment | Database   | Cache        | Configuration                  |
+| ----------- | ---------- | ------------ | ------------------------------ |
+| Development | SQLite     | Memory Cache | `appsettings.Development.json` |
+| Production  | PostgreSQL | Redis        | `appsettings.json` + Docker    |
+
+### Database Initialisation
 
 On application startup (in Development mode), the database is automatically **deleted**, **recreated**, and **seeded** using `AppDbContextInitialiser`. This is a practical strategy for early development, avoiding the overhead of maintaining migrations while keeping the schema and sample data in sync with the domain model.
 
@@ -193,14 +253,101 @@ if (app.Environment.IsDevelopment())
 
 For **production environments**, consider using EF Core migrations or migration bundles during deployment. For more information, see [Database Initialisation Strategies for EF Core](https://jasontaylor.dev/ef-core-database-initialisation-strategies/).
 
-#### Changing Database Provider
+### Changing Database Provider
 
-To switch to a different database (PostgreSQL, SQL Server, etc.), update the `AddInfrastructureServices` method in `src/Infra/DependencyInjection.cs`:
+The database provider is configured in `src/Infra/DependencyInjection.cs`:
 
 ```csharp
-// Current SQLite configuration
-var connectionString = new SqliteConnectionStringBuilder() { DataSource = "book-library.db" }.ToString();
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
+// Development: SQLite with Memory Cache
+builder.Services.AddEFSecondLevelCache(options =>
+    options.UseMemoryCacheProvider()
+);
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+    options.UseSqlite(connectionString)
+           .AddInterceptors(sp.GetRequiredService<SecondLevelCacheInterceptor>())
+);
+
+// Production: PostgreSQL with Redis Cache
+builder.Services.AddEFSecondLevelCache(options =>
+    options.UseStackExchangeRedisCacheProvider(...)
+);
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+    options.UseNpgsql(connectionString)
+           .AddInterceptors(sp.GetRequiredService<SecondLevelCacheInterceptor>())
+);
+```
+
+## Caching
+
+The project uses [EFCoreSecondLevelCacheInterceptor](https://github.com/VahidN/EFCoreSecondLevelCacheInterceptor) for second-level caching, which caches query results to reduce database load.
+
+### Cache Providers
+
+| Environment | Provider     | Configuration                        |
+| ----------- | ------------ | ------------------------------------ |
+| Development | Memory Cache | In-process, no external dependencies |
+| Production  | Redis        | Distributed, persistent cache        |
+
+### How It Works
+
+Queries marked with `.Cacheable()` are automatically cached:
+
+```csharp
+// Cached query example
+return await table.Cacheable().FirstAsync(e => e.Id == id);
+```
+
+### Cache Configuration
+
+Redis configuration is specified in `appsettings.json`:
+
+```json
+{
+  "Cache": {
+    "Host": "redis",
+    "Port": 6379
+  }
+}
+```
+
+## Pagination
+
+All list endpoints support pagination with the following query parameters:
+
+| Parameter | Type | Default | Description              |
+| --------- | ---- | ------- | ------------------------ |
+| `page`    | int? | 1       | Page number (1-indexed)  |
+| `size`    | int? | 25      | Number of items per page |
+
+### Example
+
+```bash
+# Get the first 10 books
+GET /api/books?page=1&size=10
+
+# Get the second page of authors (25 per page by default)
+GET /api/authors?page=2
+
+# Combine with filters
+GET /api/books?authorId=5&page=1&size=50
+```
+
+### Implementation
+
+Pagination is implemented in the base `DbService<T>` class:
+
+```csharp
+public const int DefaultPage = 1;
+public const int DefaultPageSize = 25;
+
+public async Task<IEnumerable<T>> GetMany(int? page = null, int? size = null)
+{
+    var (safePage, safeSize) = ParsePageAndSize(page, size);
+    return await table.Cacheable()
+        .Skip((safePage - 1) * safeSize)
+        .Take(safeSize)
+        .ToListAsync();
+}
 ```
 
 ## API Endpoints
@@ -224,6 +371,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connect
 - `publishedAt` (DateTime?) - Filter by publication date
 - `isbn` (string?) - Filter by ISBN
 - `isRead` (bool?) - Filter by read status
+- `page` (int?) - Page number (default: 1)
+- `size` (int?) - Page size (default: 25)
 
 ### Authors
 
@@ -240,6 +389,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connect
 
 - `id` (int?) - Filter by author ID
 - `name` (string?) - Filter by name (exact match)
+- `page` (int?) - Page number (default: 1)
+- `size` (int?) - Page size (default: 25)
 
 ### Categories
 
@@ -256,6 +407,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connect
 
 - `id` (int?) - Filter by category ID
 - `name` (string?) - Filter by name (exact match)
+- `page` (int?) - Page number (default: 1)
+- `size` (int?) - Page size (default: 25)
 
 ## Data Models
 
@@ -335,7 +488,7 @@ Each layer has its own `DependencyInjection.cs` file that registers its services
 
 ```csharp
 // src/Web/Program.cs
-builder.AddInfrastructureServices();  // Register Infrastructure (DbContext, etc.)
+builder.AddInfrastructureServices();  // Register Infrastructure (DbContext, Cache, etc.)
 builder.AddApplicationServices();     // Register Application (Services)
 ```
 
@@ -344,6 +497,7 @@ builder.AddApplicationServices();     // Register Application (Services)
 - `AppDbContext` - EF Core database context
 - `IAppDbContext` - Database context interface for abstraction
 - `AppDbContextInitialiser` - Database seeding service
+- `SecondLevelCacheInterceptor` - EF Core caching interceptor
 
 **Application Services** (`src/Application/DependencyInjection.cs`):
 
@@ -391,8 +545,10 @@ The service layer follows a generic pattern for code reuse:
 
 - **Generic Base Service** (`DbService<T>`) - Provides common CRUD operations
   - `Create`, `GetById`, `GetMany`, `Update`, `Delete`
+  - Built-in pagination support with `ParsePageAndSize`
   - Virtual methods `OnCreate` and `OnUpdate` for customization
   - Uses Entity Framework Core for database operations
+  - Integrated caching with `.Cacheable()` extension
 - **Specific Services** - Extend base service with domain-specific logic
   - `BookService` - Adds filtering by multiple criteria
   - `AuthorService` - Adds filtering by ID and name
@@ -412,10 +568,11 @@ The `CreatedAt` and `UpdatedAt` fields are managed through the `IEntity` interfa
 
 ### Entity Framework Core
 
-- **SQLite Provider** - Lightweight, file-based database
+- **Multiple Providers** - SQLite (development), PostgreSQL (production)
 - **DbContext** - `AppDbContext` manages database connections and entity sets
 - **Code-First Approach** - Database schema defined by entity classes
 - **Fluent Configuration** - Entity configurations in separate files (`src/Infra/Configurations/`)
+- **Second-Level Caching** - Query results cached via interceptor
 - **Automatic Seeding** - Database recreated and seeded on startup in development
 
 ## API Documentation
@@ -444,10 +601,10 @@ Content-Type: application/json
 }
 ```
 
-### Get Books by Author
+### Get Books by Author (with Pagination)
 
 ```bash
-GET /api/books?authorId=1
+GET /api/books?authorId=1&page=1&size=10
 ```
 
 ### Partial Update (PATCH)
@@ -483,7 +640,8 @@ Error responses follow this format:
 
 ### Technical Details
 
-- **Database**: SQLite database file (`book-library.db`) is created automatically in the Web project directory
+- **Database**: SQLite (development) or PostgreSQL (production/Docker)
+- **Caching**: Memory cache (development) or Redis (production/Docker)
 - **Timestamps**: All timestamps use `DateTime.UtcNow` (UTC time)
 - **HTTPS**: The API uses HTTPS redirection in production
 - **Logging**: Structured logging using `ILogger<T>` with event IDs defined in `LogEvents`
@@ -501,16 +659,18 @@ Error responses follow this format:
 3. **DTO Hierarchy**: BaseDTO → SetDTO → Entity pattern provides flexibility for different operations
 4. **Interface Segregation**: Separate interfaces for each service (`IBookService`, `IAuthorService`, etc.)
 5. **Database Abstraction**: `IAppDbContext` interface decouples Application from Infrastructure
-6. **Reflection-Based Updates**: The `Update` method uses reflection to copy properties from DTO to entity
-7. **Validation**: Manual validation in controllers ensures business rules are enforced
-8. **Development Seeding**: Automatic database recreation and seeding in development mode
+6. **Environment-Based Configuration**: Different databases and caches for development vs production
+7. **Second-Level Caching**: EF Core query caching reduces database load
+8. **Reflection-Based Updates**: The `Update` method uses reflection to copy properties from DTO to entity
+9. **Validation**: Manual validation in controllers ensures business rules are enforced
+10. **Development Seeding**: Automatic database recreation and seeding in development mode
 
 ### Known Limitations
 
 - **Partial Updates**: The reflection-based update method cannot set values to `null` (only non-null values are copied)
 - **Error Handling**: Basic error handling; global exception middleware could be added
 - **Search**: Exact match filtering only; no full-text search or fuzzy matching
-- **Pagination**: No pagination support for list endpoints
+- **Pagination Metadata**: No total count or page metadata in responses (only data array)
 
 ## Future Enhancements
 
@@ -526,7 +686,7 @@ Potential improvements for this project:
 ### Features
 
 - Authentication and authorization (JWT, OAuth, etc.)
-- Pagination for list endpoints
+- Pagination metadata (total count, total pages, links)
 - Full-text search capabilities
 - Fuzzy matching for book titles and author names
 - Book cover image support
@@ -538,12 +698,12 @@ Potential improvements for this project:
 
 - Unit tests and integration tests
 - API versioning
-- Caching for frequently accessed data
 - Database migrations with EF Core migrations
 - Health checks endpoint
 - Rate limiting
 - Request/response logging middleware
 - Production migration strategy
+- Kubernetes deployment manifests
 
 ## Learning Outcomes
 
@@ -557,7 +717,9 @@ By studying or working with this project, you'll gain experience with:
 6. **LINQ** - Query syntax, filtering, projection, deferred execution
 7. **DTOs and Validation** - Data transfer objects, model validation, separation of concerns
 8. **Generic Programming** - Generic classes, constraints, code reuse
-9. **Modern C#** - Latest language features and best practices
+9. **Caching Strategies** - Second-level caching with Memory Cache and Redis
+10. **Docker & Containerization** - Multi-stage builds, Docker Compose, service orchestration
+11. **Modern C#** - Latest language features and best practices
 
 ## License
 
